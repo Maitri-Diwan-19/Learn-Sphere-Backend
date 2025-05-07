@@ -16,9 +16,7 @@ router.delete('/:id',authenticate,authorizeInstructor,deleteCourse)
 
  
 router.get('/:courseId/getreviews', getCourseReviews);
-// router.delete('/reviews/:id', authenticate,authorize('STUDENT'),deleteReview); 
-
-// Review Comments
+ 
 router.post('/reviews/:reviewId/comments', authenticate, addComment); 
 
 module.exports =router;

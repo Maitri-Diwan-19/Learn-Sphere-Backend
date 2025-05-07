@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const prisma = require('./db.config'); // Adjust path if needed
+const prisma = require('./db.config'); 
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -15,21 +15,20 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Check if user exists by email
         let user = await prisma.user.findUnique({
           where: { email: profile.emails[0].value },
         });
 
         let isNewUser = false;
 
-        // If user doesn't exist, create a new user in the database
+        // If user doesn't exist, create a new user
         if (!user) {
           user = await prisma.user.create({
             data: {
               name: profile.displayName,
               email: profile.emails[0].value,
-              password: null, // Since it's OAuth, no password is used
-              role: 'STUDENT', // Temporary default; can be modified based on logic
+              password: null, //  it's OAuth, no password is used
+              role: 'STUDENT', 
             },
           });
           isNewUser = true;
@@ -39,22 +38,21 @@ passport.use(
         return done(null, { ...user, isNewUser });
       } catch (error) {
         console.error('Google Auth Error:', error);
-        return done(error, null); // Return error if any occurs
+        return done(error, null); 
       }
     }
   )
 );
 
-// Serialize user into the session
+
 passport.serializeUser((user, done) => {
-  done(null, user.id); // Save user ID in session
+  done(null, user.id); 
 });
 
-// Deserialize user from session
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await prisma.user.findUnique({ where: { id } });
-    done(null, user); // Attach the full user object to the session
+    done(null, user); 
   } catch (error) {
     done(error, null);
   }

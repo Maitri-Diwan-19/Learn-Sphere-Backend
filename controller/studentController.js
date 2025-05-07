@@ -33,35 +33,19 @@ const getEnrolledCourses = async (req, res) => {
   }
 };
 
-// const getCourseSessions = async (req, res) => {
-//   const studentId = req.user.userId;
-//   const courseId = Number(req.params.courseId);
-//   console.log(`course id is "${courseId}`);
-//   try {
-//     const enrollment = await prisma.enrollment.findFirst({ where: { userId: studentId, courseId } });
-//     if (!enrollment) return res.status(403).json({ message: 'Not enrolled' });
 
-//     const sessions = await prisma.session.findMany({ where: { courseId } });
-//     res.status(200).json(sessions);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
 const getCourseSessions = async (req, res) => {
   const studentId = req.user.userId;
   const courseId = Number(req.params.courseId);
   console.log(`course id is ${courseId}`);
 
   try {
-    // Check if the student is enrolled in the course
+    
     const enrollment = await prisma.enrollment.findFirst({ where: { userId: studentId, courseId } });
-    console.log('Enrollment:', enrollment);  // Debugging enrollment data
     if (!enrollment) return res.status(403).json({ message: 'Not enrolled' });
-
-    // Fetch sessions for the course
     const sessions = await prisma.session.findMany({ where: { courseId } });
 
-    // If no sessions are found, return a 404
+
     if (sessions.length === 0) {
       return res.status(404).json({ message: 'No sessions found for this course' });
     }
@@ -69,7 +53,7 @@ const getCourseSessions = async (req, res) => {
     // Send the sessions data in the response
     res.status(200).json(sessions);
   } catch (err) {
-    console.error('Error:', err);  // Log the full error
+    console.error('Error:', err);  
     res.status(500).json({ error: err.message });
   }
 };
@@ -134,10 +118,6 @@ const getCourseProgress = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-  
-  
-
 const getAllCourses = async (req, res) => {
     try {
       const courses = await prisma.course.findMany({
@@ -154,7 +134,7 @@ const getAllCourses = async (req, res) => {
 
   const getStudentProfile = async (req, res) => {
     try {
-      // Ensure user is authenticated
+      
       if (!req.user || !req.user.userId) {
         console.error("Missing user ID in request");
         return res.status(401).json({ message: "Unauthorized or invalid token" });
@@ -185,7 +165,7 @@ const getAllCourses = async (req, res) => {
       const enrolledCourses = student.enrollments.filter(e => !e.completed);
       const completedCourses = student.enrollments.filter(e => e.completed);
   
-      // Calculate progress for enrolled courses
+      // Calculate progress f
       const enrolledCoursesWithProgress = enrolledCourses.map(e => {
         const totalSessions = e.course.sessions.length;
         const completedSessions = e.course.sessions.filter(session => session.completed).length;
@@ -193,7 +173,7 @@ const getAllCourses = async (req, res) => {
   
         return {
           title: e.course.title,
-          progress: progress.toFixed(2), // Ensure we return progress as a string with 2 decimals
+          progress: progress.toFixed(2), 
         };
       });
   
@@ -220,7 +200,6 @@ const getAllCourses = async (req, res) => {
         return res.status(401).json({ message: "Unauthorized or invalid token" });
       }
   
-      // Find the enrollment record of the student for the course
       const enrollment = await prisma.enrollment.findFirst({
         where: {
           userId: req.user.userId,

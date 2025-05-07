@@ -18,7 +18,7 @@ const router = express.Router();
 // Enroll in a course
 router.post('/enroll/:courseId',authenticate,isStudent, enrollInCourse);
 
-// Get all enrolled courses (Dashboard)
+// Get all enrolled courses
 router.get('/my-enrollcourse',authenticate,authorize('STUDENT'), getEnrolledCourses);
 
 router.get('/getcourse',authenticate,getAllCourses);

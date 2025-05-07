@@ -31,7 +31,7 @@ model Course {
   instructorId  Int?
   sessions      Session[]
   enrollments   Enrollment[]
-  reviews       Review[]   // ✅ Added reverse relation to Review
+  reviews       Review[]   //  Added reverse relation to Review
 }
 
 model Session {
@@ -72,10 +72,10 @@ model Review {
   studentId Int
   course    Course          @relation(fields: [courseId], references: [id])
   courseId  Int
-  rating    Int             // 1 to 5 stars
+  rating    Int           
   comment   String
   createdAt DateTime        @default(now())
-  comments  ReviewComment[] // Comments under this review
+  comments  ReviewComment[] 
 
   @@unique([studentId, courseId]) // Only one review per student per course
 }

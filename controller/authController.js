@@ -43,14 +43,14 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Access Token (short-lived)
+    // Access Token
     const accessToken = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1m" }
+      { expiresIn: "30m" }
     );
 
-    // Refresh Token (long-lived)
+    // Refresh Token 
     const refreshToken = jwt.sign(
       { id: user.id ,role:user.role},
       process.env.JWT_REFRESH_SECRET,
@@ -62,7 +62,7 @@ const login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
-      maxAge: 1* 60 * 1000,
+      maxAge: 30* 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
@@ -83,7 +83,7 @@ const login = async (req, res) => {
 
 
 const refreshToken = (req, res) => {
-  console.log("Cookies in /refreshtoens:", req.cookies); 
+  console.log("Cookies in refreshtoken:", req.cookies); 
   const token = req.cookies.refreshToken;
   if (!token) {
     return res.status(401).json({ message: "No refresh token provided" });
@@ -95,14 +95,14 @@ const refreshToken = (req, res) => {
     const accessToken = jwt.sign(
       { id: decoded.id, role: decoded.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1m" }
+      { expiresIn: "30m" }
     );
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
-      maxAge: 1 * 60 * 1000,
+      maxAge: 30 * 60 * 1000,
     });
 
     res.json({ message: "Access token refreshed" });
@@ -111,20 +111,7 @@ const refreshToken = (req, res) => {
     res.status(403).json({ message: "Invalid refresh token" });
   }
 };
-// const getMe = (req, res) => {
-//   console.log("Cookies in /me:", req.cookies);
-//   const token = req.cookies.accessToken; 
-//   if (!token) {
-//     return res.status(401).json({ message: 'Unauthorized' });
-//   }
 
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     res.status(200).json({ user: decoded });
-//   } catch (err) {
-//     res.status(401).json({ message: 'Invalid token' });
-//   }
-// };
 const getMe = (req, res) =>{
   const token = req.cookies.accessToken;
 
@@ -157,7 +144,7 @@ const googleCallback = async (req, res) => {
     const accessToken = jwt.sign(
       { id: user.id, role: user.role || null, name: user.name },
       process.env.JWT_SECRET,
-      { expiresIn: "1m" }
+      { expiresIn: "30m" }
     );
 
     const refreshToken = jwt.sign(
@@ -171,7 +158,7 @@ const googleCallback = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
-      maxAge: 1 * 60 * 1000,
+      maxAge: 30* 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
@@ -181,7 +168,6 @@ const googleCallback = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    // Redirect based on role
     if (!user.role) {
       return res.redirect(`${process.env.FRONTEND_URL}/select-role`);
     } else if (user.role === "INSTRUCTOR") {
@@ -217,14 +203,14 @@ const updateRole = async (req, res) => {
     const newAccessToken = jwt.sign(
       { id: updatedUser.id, role: updatedUser.role, name: updatedUser.name },
       process.env.JWT_SECRET,
-      { expiresIn: "1m" }
+      { expiresIn: "30m" }
     );
 
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
-      maxAge: 1 * 60 * 1000,
+      maxAge: 30 * 60 * 1000,
     });
 
     return res.json({
