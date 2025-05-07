@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  name             String
+  email            String            @unique
+  password         String
+  role             Role              @default(STUDENT)
+
+  courses          Course[]          @relation("InstructorCourses")
+  enrollments      Enrollment[]
+  sessionProgress  SessionProgress[]  // One-to-many relationship with SessionProgress
+  reviews          Review[]           // Student's reviews
+  reviewComments   ReviewComment[]    // Comments written by this user
+}
+
+model Course {
+  id            Int        @id @default(autoincrement())
+  title         String
+  description   String
+  category      String
+  instructor    User?      @relation("InstructorCourses", fields: [instructorId], references: [id])
+  instructorId  Int?
+  sessions      Session[]
+  enrollments   Enrollment[]
+  reviews       Review[]   // ✅ Added reverse relation to Review
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  title     String
+  videoUrl  String
+  content   String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  Int
+  progress  SessionProgress[]  // One-to-many relationship with SessionProgress
+}
+
+model SessionProgress {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  sessionId String
+  completed Boolean @default(false)
+
+  session   Session @relation(fields: [sessionId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, sessionId]) // Ensures one progress record per session per user
+}
+
+model Enrollment {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int
+  course    Course  @relation(fields: [courseId], references: [id])
+  courseId  Int
+  completed Boolean @default(false)
+  progress  Float   @default(0.0)
+}
+
+model Review {
+  id        Int             @id @default(autoincrement())
+  student   User            @relation(fields: [studentId], references: [id])
+  studentId Int
+  course    Course          @relation(fields: [courseId], references: [id])
+  courseId  Int
+  rating    Int             // 1 to 5 stars
+  comment   String
+  createdAt DateTime        @default(now())
+  comments  ReviewComment[] // Comments under this review
+
+  @@unique([studentId, courseId]) // Only one review per student per course
+}
+
+model ReviewComment {
+  id        Int      @id @default(autoincrement())
+  review    Review   @relation(fields: [reviewId], references: [id])
+  reviewId  Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  text      String
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+}
